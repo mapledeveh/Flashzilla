@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FA178A742A9C1486006CF619 /* EditCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA178A732A9C1486006CF619 /* EditCards.swift */; };
 		FA67B2D02A9446A40081304C /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA67B2CF2A9446A40081304C /* Card.swift */; };
 		FA67B2D22A9447050081304C /* CardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA67B2D12A9447050081304C /* CardView.swift */; };
 		FACA7EA42A9156F600A7933E /* FlashzillaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACA7EA32A9156F600A7933E /* FlashzillaApp.swift */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FA178A732A9C1486006CF619 /* EditCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditCards.swift; sourceTree = "<group>"; };
 		FA67B2CF2A9446A40081304C /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		FA67B2D12A9447050081304C /* CardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardView.swift; sourceTree = "<group>"; };
 		FACA7EA02A9156F600A7933E /* Flashzilla.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flashzilla.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,6 +59,7 @@
 			children = (
 				FACA7EA32A9156F600A7933E /* FlashzillaApp.swift */,
 				FACA7EA52A9156F600A7933E /* ContentView.swift */,
+				FA178A732A9C1486006CF619 /* EditCards.swift */,
 				FA67B2CF2A9446A40081304C /* Card.swift */,
 				FA67B2D12A9447050081304C /* CardView.swift */,
 				FACA7EA72A9156F700A7933E /* Assets.xcassets */,
@@ -146,6 +149,7 @@
 				FACA7EA62A9156F600A7933E /* ContentView.swift in Sources */,
 				FA67B2D02A9446A40081304C /* Card.swift in Sources */,
 				FA67B2D22A9447050081304C /* CardView.swift in Sources */,
+				FA178A742A9C1486006CF619 /* EditCards.swift in Sources */,
 				FACA7EA42A9156F600A7933E /* FlashzillaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
