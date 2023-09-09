@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CardView: View {
     let card: Card
-    var removal: (() -> Void)? = nil
+    var removal: ((_ answer: Bool) -> Void)? = nil
     
     @State private var feedback = UINotificationFeedbackGenerator()
     
@@ -31,7 +31,8 @@ struct CardView: View {
                     differentiateWithoutColor
                     ? nil
                     : RoundedRectangle(cornerRadius: 25, style: .continuous)
-                        .fill(offset.width > 0 ? .green : .red)
+                        .fill(offset.width >= 0 ? .green : .red)
+                    // changing the condition from > to >= seems to have fixed the bug where a green card turns red as it slides back to the center
                 )
                 .shadow(radius: 10)
             
@@ -68,20 +69,21 @@ struct CardView: View {
                 }
                 .onEnded { _ in
                     if abs(offset.width) > 100 {
-//                        if offset.width > 0 {
+                        if offset.width > 0 {
 //                            feedback.notificationOccurred(.success)
-//                        } else {
-//                            feedback.notificationOccurred(.error)
-//                        }
-                        if offset.width < 0 {
+                            removal?(true)
+                        } else {
                             feedback.notificationOccurred(.error)
+                            removal?(false)
                         }
-                        removal?()
                     } else {
                         offset = .zero
                     }
                 }
         )
+        .onAppear {
+            isShowingAnswer = false
+        }
         .onTapGesture {
             isShowingAnswer.toggle()
         }

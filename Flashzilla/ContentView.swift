@@ -7,26 +7,14 @@
 
 import SwiftUI
 
-extension View {
-    func stacked(at position: Int, in total: Int) -> some View {
-        let offset = Double(total - position)
-        return self.offset(x: 0, y: offset * 10)
-    }
-}
-
 struct ContentView: View {
     @Environment(\.accessibilityDifferentiateWithoutColor) var differentiateWithoutColor
     @Environment(\.accessibilityVoiceOverEnabled) var voiceOverEnabled
-//    @State private var cards = Array<Card>(repeating: Card.example, count: 5)
-    @State private var cards = [Card]()
-    
-    @State private var timeRemaining = 100
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
+//    @State private var viewModel.deck.cards = Array<Card>(repeating: Card.example, count: 5)
     @Environment(\.scenePhase) var scenePhase
-    @State private var isActive = false
-    
-    @State private var showingEditScreen = false
+        
+    @StateObject var deck = Deck()
+    @StateObject var viewModel = ViewModel()
     
     var body: some View {
         ZStack {
@@ -35,7 +23,7 @@ struct ContentView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 10) {
-                Text("Time: \(timeRemaining)")
+                Text("Time: \(viewModel.timeRemaining)")
                     .font(.largeTitle)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -44,21 +32,31 @@ struct ContentView: View {
                     .clipShape(Capsule())
                 
                 ZStack {
-                    ForEach(0..<cards.count, id: \.self) { index in
-                        CardView(card: cards[index]) {
+                    ForEach(viewModel.deck.cards) { card in
+                        CardView(card: card) { correctAnswer in
                             withAnimation {
-                                removeCard(at: index)
+                                if correctAnswer {
+                                    viewModel.removeCard(card)
+                                } else {
+                                    let newCard = Card(prompt: card.prompt, answer: card.answer)
+                                    viewModel.deck.cards.insert(newCard, at: 0)
+                                    viewModel.removeCard(card)
+                                }
                             }
                         }
-                        .stacked(at: index, in: cards.count)
-                        .allowsHitTesting(index == cards.count - 1)
-                        .accessibilityHidden(index < cards.count - 1)
-                    }
+                        .stacked(at: viewModel.deck.cards.firstIndex(of: card) ?? 0, in: viewModel.deck.cards.count)
+                        .allowsHitTesting(viewModel.deck.cards.firstIndex(of: card) ?? 0 == viewModel.deck.cards.count - 1)
+                        .accessibilityHidden(viewModel.deck.cards.firstIndex(of: card) ?? 0 < viewModel.deck.cards.count - 1)
+                    } 
                 }
-                .allowsTightening(timeRemaining > 0)
+                .allowsTightening(viewModel.timeRemaining > 0)
                 
-                if cards.isEmpty {
-                    Button("Start Again", action: resetCards)
+                if viewModel.deck.cards.isEmpty {
+                    Button("Start Again") {
+                        Task {
+                            viewModel.resetCards()
+                        }
+                    }
                         .padding()
                         .background(.white)
                         .foregroundColor(.black)
@@ -71,7 +69,7 @@ struct ContentView: View {
                     Spacer()
                     
                     Button {
-                        showingEditScreen = true
+                        viewModel.showingEditScreen = true
                     } label: {
                         Image(systemName: "plus.circle")
                             .padding()
@@ -93,7 +91,10 @@ struct ContentView: View {
                     HStack {
                         Button {
                             withAnimation {
-                                removeCard(at: cards.count - 1)
+                                let card = viewModel.deck.cards.last!
+                                let newCard = Card(prompt: card.prompt, answer: card.answer)
+                                viewModel.deck.cards.insert(newCard, at: 0)
+                                viewModel.removeCard(card)
                             }
                         } label: {
                             Image(systemName: "xmark.circle")
@@ -108,7 +109,7 @@ struct ContentView: View {
                         
                         Button {
                             withAnimation {
-                                removeCard(at: cards.count - 1)
+                                viewModel.removeCard(viewModel.deck.cards.last!)
                             }
                         } label: {
                             Image(systemName: "checkmark.circle")
@@ -123,51 +124,13 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .padding()
                 }
+                .disabled(viewModel.deck.cards.count == 0)
             }
         }
-        .onReceive(timer) { time in
-            guard isActive else { return }
-            
-            if timeRemaining > 0 {
-                timeRemaining -= 1
-            }
-        }
-        .onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
-                if cards.isEmpty == false {
-                    isActive = true
-                }
-            } else {
-                isActive = false
-            }
-        }
-        .sheet(isPresented: $showingEditScreen, onDismiss: resetCards, content: EditCards.init)
-        .onAppear(perform: resetCards)
-    }
-    
-    func removeCard(at index: Int) {
-        guard index >= 0 else { return }
-        cards.remove(at: index)
-        
-        if cards.isEmpty {
-            isActive = false
-        }
-    }
-    
-    func resetCards() {
-//        cards = Array(repeating: Card.example, count: 5)
-        loadData()
-        timeRemaining = 100
-        isActive = true
-    }
-    
-    func loadData() {
-        if let data = UserDefaults.standard.data(forKey: "Cards") {
-            if let decodedCards = try? JSONDecoder().decode([Card].self, from: data) {
-                cards = decodedCards
-                return
-            }
-        }
+        .onReceive(viewModel.timer) { _ in viewModel.countdown() }
+        .onChange(of: scenePhase, perform: viewModel.changePhase)
+        .sheet(isPresented: $viewModel.showingEditScreen, onDismiss: viewModel.resetCards, content: EditCards.init)
+        .onAppear(perform: viewModel.resetCards)
     }
 }
 

@@ -41,33 +41,49 @@ struct EditCards: View {
                     Button {
                         dismiss()
                     } label: {
-                        Text("Add")
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
+                        Text("Done")
                     }
                 }
             }
-            .listStyle(.grouped)
+            //            .listStyle(.grouped)
             .onAppear(perform: loadData)
         }
     }
     
+//    func loadData() {
+//        if let data = UserDefaults.standard.data(forKey: "Cards") {
+//            if let decodedCards = try? JSONDecoder().decode([Card].self, from: data) {
+//                cards = decodedCards
+//                return
+//            }
+//        }
+//    }
+    
+//    func saveData() {
+//        if let encoded = try? JSONEncoder().encode(cards) {
+//            UserDefaults.standard.set(encoded, forKey: "Cards")
+//        }
+//    }
+    
     func loadData() {
-        if let data = UserDefaults.standard.data(forKey: "Cards") {
-            if let decodedCards = try? JSONDecoder().decode([Card].self, from: data) {
-                cards = decodedCards
-                return
-            }
+        let savePath = FileManager.documentsDirectory.appendingPathComponent("Cards.json")
+        
+        do {
+            let encoded = try Data(contentsOf: savePath)
+            cards = try JSONDecoder().decode([Card].self, from: encoded)
+        } catch {
+            cards = []
         }
     }
-    
+        
     func saveData() {
-        if let encoded = try? JSONEncoder().encode(cards) {
-            UserDefaults.standard.set(encoded, forKey: "Cards")
+        let savePath = FileManager.documentsDirectory.appendingPathComponent("Cards.json")
+        
+        do {
+            let data = try JSONEncoder().encode(cards)
+            try data.write(to: savePath, options: [.atomic, .completeFileProtection])
+        } catch {
+            print("Unable to save data")
         }
     }
     
@@ -78,6 +94,8 @@ struct EditCards: View {
         
         let card = Card(prompt: trimmedPrompt, answer: trimmedAnswer)
         cards.insert(card, at: 0)
+        answer = ""
+        prompt = ""
         saveData()
     }
     
@@ -90,5 +108,6 @@ struct EditCards: View {
 struct EditCards_Previews: PreviewProvider {
     static var previews: some View {
         EditCards()
+            .previewInterfaceOrientation(.landscapeRight)
     }
 }
